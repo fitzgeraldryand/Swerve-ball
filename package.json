@@ -1,0 +1,25 @@
+{
+  "name": "Swerve-ball",
+  "version": "1.0.0",
+  "description": "Clone of the 3D pong game, Curveball. Original can be found at: http://www.curveball-game.com",
+  "main": "index.js",
+  "scripts": {
+    "webpack": "webpack --watch --mode=development",
+    "postinstall": "node_modules/.bin/webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fitzgeraldryand/Swerve-ball.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fitzgeraldryand/Swerve-ball/issues"
+  },
+  "homepage": "https://github.com/fitzgeraldryand/Swerve-ball#readme",
+  "dependencies": {
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1"
+  }
+}
