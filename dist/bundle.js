@@ -86,6 +86,41 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./frontend/ball.js":
+/*!**************************!*\
+  !*** ./frontend/ball.js ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+class Ball {
+  constructor(stage, game) {
+    this.stage = stage;
+    this.game = game;
+    this.ball = new createjs.Shape();
+    this.draw();
+  }
+
+
+  draw() {
+    const circle = new createjs.Shape();
+    circle.graphics
+      .beginRadialGradientFill(["#fafafa","#5df942"], [0, 1], 8, -8, 3, 0, 0, 30)
+      .drawCircle(0, 0, 30);
+    circle.x = circle.y = 400;
+    this.stage.addChild(circle);
+    this.stage.update();
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Ball);
+
+
+/***/ }),
+
 /***/ "./frontend/game.js":
 /*!**************************!*\
   !*** ./frontend/game.js ***!
@@ -110,6 +145,89 @@ const game = new Game();
 
 /***/ }),
 
+/***/ "./frontend/paddle.js":
+/*!****************************!*\
+  !*** ./frontend/paddle.js ***!
+  \****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const humanWidth = 124;
+const humanHeight = 80;
+
+class Paddle {
+  constructor(stage, game, type) {
+    this.stage = stage;
+    this.game = game;
+    this.type = type;
+    this.paddle = new createjs.Shape();
+    this.drawPaddle();
+    // this.movePaddle();
+  }
+
+  drawPaddle() {
+    if (this.type === 'Human') {
+      this.paddle.graphics.beginStroke("blue").beginFill('gray').drawRoundRect(0, 0, humanWidth, humanHeight, 8);
+      this.paddle.alpha = 0.5;
+      // debugger
+      this.paddle.x = 338;
+      this.paddle.y = 360;
+      this.stage.addChild(this.paddle);
+      // const centerHumanPaddle = new createjs.Shape();
+      // centerHumanPaddle.graphics.beginStroke("blue").beginFill('gray').drawRoundRect(338, 360, 124, 25, 16, 8);
+      // centerHumanPaddle.alpha = 0.5;
+      // this.stage.addChild(centerHumanPaddle);
+    } else {
+      this.paddle.graphics.beginStroke("red").beginFill('gray').drawRoundRect(380, 388, 38, 24, 4);
+      this.paddle.alpha = 0.5;
+      // this.paddle.x = 380;
+      // this.paddle.y = 388;
+      this.stage.addChild(this.paddle);
+    }
+    this.stage.update();
+  }
+
+  // center() {
+  //  this.paddle.x -= this.width / 2;
+  //  this.paddle.y -= this.height / 2;
+  // }
+
+  defineBounds() {
+    if (this.type === 'Human') {
+      if (this.paddle.x > 710 - humanWidth) {
+        this.paddle.x = 710 - humanWidth;
+      } else if (this.paddle.x < 90) {
+        this.paddle.x = 90;
+      }
+
+      if (this.paddle.y < 190) {
+        this.paddle.y = 190;
+      } else if (this.paddle.y > 610 - humanHeight) {
+        this.paddle.y = 610 - humanHeight;
+      }
+    }
+  }
+
+  movePaddle() {
+
+    if (this.type === 'Human') {
+      this.paddle.x = this.stage.mouseX - humanWidth / 2;
+      this.paddle.y = this.stage.mouseY - humanHeight / 2;
+    }
+
+    this.defineBounds();
+    this.stage.update();
+  }
+
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Paddle);
+
+
+/***/ }),
+
 /***/ "./frontend/tunnel.js":
 /*!****************************!*\
   !*** ./frontend/tunnel.js ***!
@@ -119,11 +237,23 @@ const game = new Game();
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _paddle_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./paddle.js */ "./frontend/paddle.js");
+/* harmony import */ var _ball_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ball.js */ "./frontend/ball.js");
+const Ai = 'Ai';
+const Human = 'Human';
+
+
+
 class Tunnel {
   constructor(stage, game) {
     this.stage = stage;
     this.game = game;
     this.drawTunnel();
+    this.aiPaddle = new _paddle_js__WEBPACK_IMPORTED_MODULE_0__["default"](this.stage, this.game, Ai);
+    this.ball = new _ball_js__WEBPACK_IMPORTED_MODULE_1__["default"](this.stage, this.game);
+    this.humanPaddle = new _paddle_js__WEBPACK_IMPORTED_MODULE_0__["default"](this.stage, this.game, Human);
+    this.ticker = createjs.Ticker;
+    this.controlPaddle();
   }
 
   drawBorders() {
@@ -179,7 +309,9 @@ class Tunnel {
     this.stage.update();
   }
 
-
+  controlPaddle() {
+    this.ticker.addEventListener('tick', this.humanPaddle.movePaddle.bind(this.humanPaddle));
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (Tunnel);

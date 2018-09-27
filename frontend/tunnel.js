@@ -1,8 +1,18 @@
+const Ai = 'Ai';
+const Human = 'Human';
+import Paddle from './paddle.js';
+import Ball from './ball.js';
+
 class Tunnel {
   constructor(stage, game) {
     this.stage = stage;
     this.game = game;
     this.drawTunnel();
+    this.aiPaddle = new Paddle(this.stage, this.game, Ai);
+    this.ball = new Ball(this.stage, this.game);
+    this.humanPaddle = new Paddle(this.stage, this.game, Human);
+    this.ticker = createjs.Ticker;
+    this.controlPaddle();
   }
 
   drawBorders() {
@@ -58,7 +68,9 @@ class Tunnel {
     this.stage.update();
   }
 
-
+  controlPaddle() {
+    this.ticker.addEventListener('tick', this.humanPaddle.movePaddle.bind(this.humanPaddle));
+  }
 }
 
 export default Tunnel;
