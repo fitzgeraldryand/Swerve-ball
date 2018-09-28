@@ -1,5 +1,7 @@
 const humanWidth = 124;
 const humanHeight = 80;
+const aiWidth = 38;
+const aiHeight = 24;
 
 class Paddle {
   constructor(stage, game, type) {
@@ -8,6 +10,8 @@ class Paddle {
     this.type = type;
     this.paddle = new createjs.Shape();
     this.drawPaddle();
+    this.width = (this.type === 'Human' ? humanWidth : aiWidth);
+    this.height = (this.type === 'Human' ? humanHeight : aiHeight);
     // this.movePaddle();
   }
 
@@ -24,7 +28,7 @@ class Paddle {
       // centerHumanPaddle.alpha = 0.5;
       // this.stage.addChild(centerHumanPaddle);
     } else {
-      this.paddle.graphics.beginStroke("red").beginFill('gray').drawRoundRect(380, 388, 38, 24, 4);
+      this.paddle.graphics.beginStroke("red").beginFill('gray').drawRoundRect(380, 388, aiWidth, aiHeight, 4);
       this.paddle.alpha = 0.5;
       // this.paddle.x = 380;
       // this.paddle.y = 388;
@@ -39,32 +43,26 @@ class Paddle {
   // }
 
   defineBounds() {
-    if (this.type === 'Human') {
-      if (this.paddle.x > 710 - humanWidth) {
-        this.paddle.x = 710 - humanWidth;
-      } else if (this.paddle.x < 90) {
-        this.paddle.x = 90;
-      }
+    if (this.paddle.x > 710 - this.width) {
+      this.paddle.x = 710 - this.width;
+    } else if (this.paddle.x < 90) {
+      this.paddle.x = 90;
+    }
 
-      if (this.paddle.y < 190) {
-        this.paddle.y = 190;
-      } else if (this.paddle.y > 610 - humanHeight) {
-        this.paddle.y = 610 - humanHeight;
-      }
+    if (this.paddle.y < 190) {
+      this.paddle.y = 190;
+    } else if (this.paddle.y > 610 - this.height) {
+      this.paddle.y = 610 - this.height;
     }
   }
 
   movePaddle() {
-
-    if (this.type === 'Human') {
-      this.paddle.x = this.stage.mouseX - humanWidth / 2;
-      this.paddle.y = this.stage.mouseY - humanHeight / 2;
-    }
+    this.paddle.x = this.stage.mouseX - this.width / 2;
+    this.paddle.y = this.stage.mouseY - this.height / 2;
 
     this.defineBounds();
     this.stage.update();
   }
-
 }
 
 export default Paddle;

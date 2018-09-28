@@ -1,9 +1,10 @@
 import Tunnel from './tunnel.js';
 
 class Game {
-  constructor() {
+  constructor(difficulty) {
+    this.difficulty = difficulty;
     this.stage = new createjs.Stage("canvas");
-    this.tunnel = new Tunnel(this.stage, this);
+    this.tunnel = new Tunnel(this.stage, this, this.difficulty);
   }
 }
 
