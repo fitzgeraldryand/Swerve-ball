@@ -12,7 +12,8 @@ class Paddle {
     this.drawPaddle();
     this.width = (this.type === 'Human' ? humanWidth : aiWidth);
     this.height = (this.type === 'Human' ? humanHeight : aiHeight);
-    // this.movePaddle();
+    this.placeholderX = 400;
+    this.placeholderY = 400;
   }
 
   drawPaddle() {
@@ -43,25 +44,52 @@ class Paddle {
   // }
 
   defineBounds() {
-    if (this.paddle.x > 710 - this.width) {
-      this.paddle.x = 710 - this.width;
-    } else if (this.paddle.x < 90) {
-      this.paddle.x = 90;
-    }
+    if (this.type === 'Human') {
+      if (this.paddle.x > 710 - this.width) {
+        this.paddle.x = 710 - this.width;
+      } else if (this.paddle.x < 90) {
+        this.paddle.x = 90;
+      }
 
-    if (this.paddle.y < 190) {
-      this.paddle.y = 190;
-    } else if (this.paddle.y > 610 - this.height) {
-      this.paddle.y = 610 - this.height;
+      if (this.paddle.y < 190) {
+        this.paddle.y = 190;
+      } else if (this.paddle.y > 610 - this.height) {
+        this.paddle.y = 610 - this.height;
+      }
+    } else {
+      if (this.paddle.x > 478 - this.width) {
+        this.paddle.x = 478 - this.width;
+      } else if (this.paddle.x < 322) {
+        this.paddle.x = 322;
+      }
+
+      if (this.paddle.y < 348) {
+        this.paddle.y = 348;
+      } else if (this.paddle.y > 452 - this.height) {
+        this.paddle.y = 452 - this.height;
+      }
     }
   }
 
   movePaddle() {
+    this.previousX = this.placeholderX;
+    this.previousY = this.placeholderY;
+
+    this.placeholderX = this.paddle.x;
+    this.placeholderY = this.paddle.y;
+
     this.paddle.x = this.stage.mouseX - this.width / 2;
     this.paddle.y = this.stage.mouseY - this.height / 2;
 
     this.defineBounds();
     this.stage.update();
+  }
+
+  spinVector() {
+    const xSpin = this.paddle.x - this.previousX;
+    const ySpin = this.paddle.y - this.previousY;
+
+    return [xSpin, ySpin];
   }
 }
 

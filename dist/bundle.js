@@ -107,6 +107,14 @@ class Ball {
     this.direction = 1;
     this.distance = 0;
     this.draw("#5df942", 400, 400);
+    this.xVelocity = 0;
+    this.yVelocity = 0;
+    this.xSpin = 5 * (Math.random() - 0.5);
+    this.ySpin = 5 * (Math.random() - 0.5);
+    this.rawX = 400;
+    this.rawY = 400;
+    this.farX = 400;
+    this.farY = 400;
   }
 
   draw(color, locationX = this.ball.x, locationY = this.ball.y) {
@@ -133,7 +141,57 @@ class Ball {
       this.distance -= 2;
     }
     this.scaleBall();
+    this.applySpin();
+    this.applyVelocity();
+    this.applyPerspective();
+    this.adjustForRadius();
+    // this.moveAroundTunnel();
     this.stage.update();
+  }
+
+  // moveAroundTunnel() {
+  //   this.ball.x += this.xVelocity;
+  //   this.ball.y += this.yVelocity;
+  // }
+
+  adjustForRadius() {
+    if (this.rawX > 400) {
+      this.ball.x -= this.ballRadius * (this.rawX - 400)/312;
+    } else if (this.rawX < 400) {
+      this.ball.x += this.ballRadius * (400 - this.rawX)/312;
+    }
+
+    if (this.rawY > 400) {
+      this.ball.y -= this.ballRadius * (this.rawY - 400)/209;
+    } else if (this.rawY < 400) {
+      this.ball.y += this.ballRadius * (400 - this.rawY)/209;
+    }
+  }
+
+  applyPerspective() {
+    const distanceFactor = this.distance / this.totalDistance;
+
+    this.ball.x = this.rawX - (this.rawX - this.farX) * distanceFactor;
+    this.ball.y = this.rawY - (this.rawY - this.farY) * distanceFactor;
+  }
+
+
+  applySpin() {
+    if (this.direction === 1){
+     this.xVelocity -= this.xSpin / this.totalDistance;
+     this.yVelocity -= this.ySpin / this.totalDistance;
+    } else {
+     this.xVelocity += this.xSpin / this.totalDistance;
+     this.yVelocity += this.ySpin / this.totalDistance;
+    }
+  }
+
+ applyVelocity() {
+    this.rawX += this.xVelocity;
+    this.farX = (this.rawX - 400) * 79/312 + 400;
+
+    this.rawY += this.yVelocity;
+    this.farY = (this.rawY - 400) * 53/209 + 400;
   }
 }
 
@@ -190,7 +248,8 @@ class Paddle {
     this.drawPaddle();
     this.width = (this.type === 'Human' ? humanWidth : aiWidth);
     this.height = (this.type === 'Human' ? humanHeight : aiHeight);
-    // this.movePaddle();
+    this.placeholderX = 400;
+    this.placeholderY = 400;
   }
 
   drawPaddle() {
@@ -221,25 +280,52 @@ class Paddle {
   // }
 
   defineBounds() {
-    if (this.paddle.x > 710 - this.width) {
-      this.paddle.x = 710 - this.width;
-    } else if (this.paddle.x < 90) {
-      this.paddle.x = 90;
-    }
+    if (this.type === 'Human') {
+      if (this.paddle.x > 710 - this.width) {
+        this.paddle.x = 710 - this.width;
+      } else if (this.paddle.x < 90) {
+        this.paddle.x = 90;
+      }
 
-    if (this.paddle.y < 190) {
-      this.paddle.y = 190;
-    } else if (this.paddle.y > 610 - this.height) {
-      this.paddle.y = 610 - this.height;
+      if (this.paddle.y < 190) {
+        this.paddle.y = 190;
+      } else if (this.paddle.y > 610 - this.height) {
+        this.paddle.y = 610 - this.height;
+      }
+    } else {
+      if (this.paddle.x > 478 - this.width) {
+        this.paddle.x = 478 - this.width;
+      } else if (this.paddle.x < 322) {
+        this.paddle.x = 322;
+      }
+
+      if (this.paddle.y < 348) {
+        this.paddle.y = 348;
+      } else if (this.paddle.y > 452 - this.height) {
+        this.paddle.y = 452 - this.height;
+      }
     }
   }
 
   movePaddle() {
+    this.previousX = this.placeholderX;
+    this.previousY = this.placeholderY;
+
+    this.placeholderX = this.paddle.x;
+    this.placeholderY = this.paddle.y;
+
     this.paddle.x = this.stage.mouseX - this.width / 2;
     this.paddle.y = this.stage.mouseY - this.height / 2;
 
     this.defineBounds();
     this.stage.update();
+  }
+
+  spinVector() {
+    const xSpin = this.paddle.x - this.previousX;
+    const ySpin = this.paddle.y - this.previousY;
+
+    return [xSpin, ySpin];
   }
 }
 
@@ -268,13 +354,14 @@ class Tunnel {
   constructor(stage, game, difficulty) {
     this.stage = stage;
     this.game = game;
-    this.totalDistance = 60;
+    this.ticker = createjs.Ticker;
+    this.ticker.framerate = 60;
+    this.totalDistance = 180;
     this.difficulty = difficulty;
     this.drawTunnel();
     this.aiPaddle = new _paddle_js__WEBPACK_IMPORTED_MODULE_0__["default"](this.stage, this.game, Ai);
     this.ball = new _ball_js__WEBPACK_IMPORTED_MODULE_1__["default"](this.stage, this.game, this.totalDistance, this.difficulty);
     this.humanPaddle = new _paddle_js__WEBPACK_IMPORTED_MODULE_0__["default"](this.stage, this.game, Human);
-    this.ticker = createjs.Ticker;
     this.tracker = new createjs.Shape();
     this.drawTracker();
     this.controlPaddle();
@@ -336,7 +423,8 @@ class Tunnel {
   }
 
   controlPaddle() {
-    this.ticker.addEventListener('tick', this.humanPaddle.movePaddle.bind(this.humanPaddle));
+    // this.ticker.addEventListener('tick', this.aiPaddle.movePaddle.bind(this.aiPaddle));
+    this.ticker.addEventListener('tick', this.humanPaddle.movePaddle.bind(this.humanPaddle, this.ball));
   }
 
 
@@ -346,8 +434,10 @@ class Tunnel {
 
   hitOrNot() {
     if (this.ball.direction === 1 && this.ball.distance === this.totalDistance) {
-      debugger
       if (this.hitX(this.aiPaddle) && this.hitY(this.aiPaddle)) {
+        // this.ball.xVelocity = this.aiPaddle.paddleVelocityX();
+        // debugger
+        // this.ball.yVelocity = this.aiPaddle.paddleVelocityY();
         this.ball.direction = -1;
       } else {
         this.ball.direction = 0;
@@ -356,11 +446,17 @@ class Tunnel {
         this.handleFarBallFinish();
       }
     } else if (this.ball.direction === -1 && this.ball.distance === 0) {
-      debugger
       if (this.hitX(this.humanPaddle) && this.hitY(this.humanPaddle)) {
+        // this.ball.xVelocity = this.humanPaddle.paddleVelocityX();
+        // this.ball.yVelocity = this.humanPaddle.paddleVelocityY();
+        this.getSpin();
         this.ball.direction = 1;
       } else {
         this.ball.direction = 0;
+        this.ball.xVelocity = 0;
+        this.ball.yVelocity = 0;
+        this.ball.xSpin = 0;
+        this.ball.ySpin = 0;
         this.ticker.removeEventListener('tick', this.ball.moveThroughTunnel.bind(this.ball));
         this.ticker.removeEventListener('tick', this.scaleTracker.bind(this));
         this.ball.draw("red");
@@ -382,7 +478,6 @@ class Tunnel {
 
   hitX(paddle) {
     const locator = (paddle.type === 'Human' ? paddle.paddle.x : paddle.paddle.graphics.command.x);
-    debugger
     if (
         (
           (this.ball.ball.x - this.ball.ballRadius) <= (locator + paddle.width) &&
@@ -401,7 +496,6 @@ class Tunnel {
 
   hitY(paddle) {
     const locator = (paddle.type === 'Human' ? paddle.paddle.y : paddle.paddle.graphics.command.y);
-    debugger
     if (
         (
           (this.ball.ball.y - this.ball.ballRadius) <= (locator + paddle.height) &&
@@ -421,12 +515,16 @@ class Tunnel {
   scaleTracker() {
     // for x and y positions of tracker, add to starting point pixel value proportional to
     // the distance the ball itself has travelled
-    const x = 90 + ( (322 - 90) * (this.ball.distance / this.totalDistance));
-    const y = 190 + ( (348 - 190) * (this.ball.distance / this.totalDistance));
+    this.prevTrackerX = this.trackerX;
+    this.prevTrackerY = this.trackerY;
+    this.prevTrackerW = this.trackerW;
+    this.prevTrackerH = this.trackerH;
+    this.trackerX = 90 + ( (322 - 90) * (this.ball.distance / this.totalDistance));
+    this.trackerY = 190 + ( (348 - 190) * (this.ball.distance / this.totalDistance));
     // for width and height, shrink by pixel value proportional to same
-    const w = 620 - ( (620 - 158) * (this.ball.distance / this.totalDistance));
-    const h = 420 - ( (420 - 106) * (this.ball.distance / this.totalDistance));
-    this.tracker.graphics.clear().beginStroke("white").drawRect(x, y, w, h);
+    this.trackerW = 620 - ( (620 - 156) * (this.ball.distance / this.totalDistance));
+    this.trackerH = 420 - ( (420 - 104) * (this.ball.distance / this.totalDistance));
+    this.tracker.graphics.clear().beginStroke("white").drawRect(this.trackerX, this.trackerY, this.trackerW, this.trackerH);
     this.stage.update();
   }
 
@@ -441,6 +539,47 @@ class Tunnel {
   moveBall() {
     this.ticker.addEventListener('tick', this.ball.moveThroughTunnel.bind(this.ball));
     this.ticker.addEventListener('tick', this.scaleTracker.bind(this));
+    this.ticker.addEventListener('tick', this.detectWallBounce.bind(this));
+  }
+
+  // bounceBallOffWalls() {
+  //   debugger
+  //   if
+  //     (
+  //       (this.ball.ball.x - this.ball.ballRadius <= this.prevTrackerX) ||
+  //       (this.ball.ball.x + this.ball.ballRadius >= this.prevTrackerW + this.prevTrackerX)
+  //     )
+  //     {
+  //       this.ball.xVelocity = this.ball.xVelocity * -1;
+  //       this.stage.update();
+  //     }
+  //   else if
+  //     (
+  //       (this.ball.ball.y - this.ball.ballRadius <= this.prevTrackerY) ||
+  //       (this.ball.ball.y + this.ball.ballRadius >= this.prevTrackerH + this.prevTrackerY)
+  //     )
+  //     {
+  //       this.ball.yVelocity = this.ball.yVelocity * -1;
+  //       this.stage.update();
+  //     }
+  // }
+
+  detectWallBounce() {
+    if(this.ball.rawX >= 710 || this.ball.rawX <= 90){
+      this.ball.xVelocity = this.ball.xVelocity * -1;
+      this.ball.xSpin = 0;
+    }
+
+    if(this.ball.rawY >= 610 || this.ball.rawY <= 190){
+      this.ball.yVelocity = this.ball.yVelocity * -1;
+      this.ball.ySpin = 0;
+    }
+  }
+
+  getSpin() {
+    let [xSpin, ySpin] = this.humanPaddle.spinVector();
+    this.ball.xSpin += xSpin;
+    this.ball.ySpin += ySpin;
   }
 }
 
