@@ -12,8 +12,8 @@ class Ball {
     this.draw("#5df942", 400, 400);
     this.xVelocity = 0;
     this.yVelocity = 0;
-    this.xSpin = 5 * (Math.random() - 0.5);
-    this.ySpin = 5 * (Math.random() - 0.5);
+    this.xSpin = 0;
+    this.ySpin = 0;
     this.rawX = 400;
     this.rawY = 400;
     this.farX = 400;
@@ -30,6 +30,16 @@ class Ball {
     this.stage.update();
   }
 
+  applySpin() {
+    if (this.direction === 1){
+      this.xVelocity -= this.xSpin / this.totalDistance;
+      this.yVelocity -= this.ySpin / this.totalDistance;
+    } else {
+      this.xVelocity += this.xSpin / this.totalDistance;
+      this.yVelocity += this.ySpin / this.totalDistance;
+    }
+  }
+
   scaleBall() {
     this.ball.scaleX = 1 - (this.distance * 3) / (4 * this.totalDistance);
     this.ball.scaleY = 1 - (this.distance * 3) / (4 * this.totalDistance);
@@ -39,55 +49,40 @@ class Ball {
 
   moveThroughTunnel() {
     if (this.direction === 1) {
-      this.distance += 2;
+      this.distance += 2.5;
     } else if (this.direction === -1) {
-      this.distance -= 2;
+      this.distance -= 2.5;
     }
     this.scaleBall();
     this.applySpin();
     this.applyVelocity();
     this.applyPerspective();
     this.adjustForRadius();
-    // this.moveAroundTunnel();
     this.stage.update();
   }
 
-  // moveAroundTunnel() {
-  //   this.ball.x += this.xVelocity;
-  //   this.ball.y += this.yVelocity;
-  // }
-
   adjustForRadius() {
     if (this.rawX > 400) {
-      this.ball.x -= this.ballRadius * (this.rawX - 400)/312;
+      this.ball.x -= this.ballRadius * (this.rawX - 400)/322;
     } else if (this.rawX < 400) {
-      this.ball.x += this.ballRadius * (400 - this.rawX)/312;
+      this.ball.x += this.ballRadius * (400 - this.rawX)/322;
     }
 
     if (this.rawY > 400) {
-      this.ball.y -= this.ballRadius * (this.rawY - 400)/209;
+      this.ball.y -= this.ballRadius * (this.rawY - 400)/348;
     } else if (this.rawY < 400) {
-      this.ball.y += this.ballRadius * (400 - this.rawY)/209;
+      this.ball.y += this.ballRadius * (400 - this.rawY)/348;
     }
   }
 
   applyPerspective() {
-    const distanceFactor = this.distance / this.totalDistance;
+    const distanceRatio= this.distance / this.totalDistance;
 
-    this.ball.x = this.rawX - (this.rawX - this.farX) * distanceFactor;
-    this.ball.y = this.rawY - (this.rawY - this.farY) * distanceFactor;
+    this.ball.x = this.rawX - (this.rawX - this.farX) * distanceRatio;
+    this.ball.y = this.rawY - (this.rawY - this.farY) * distanceRatio;
   }
 
 
-  applySpin() {
-    if (this.direction === 1){
-     this.xVelocity -= this.xSpin / this.totalDistance;
-     this.yVelocity -= this.ySpin / this.totalDistance;
-    } else {
-     this.xVelocity += this.xSpin / this.totalDistance;
-     this.yVelocity += this.ySpin / this.totalDistance;
-    }
-  }
 
  applyVelocity() {
     this.rawX += this.xVelocity;

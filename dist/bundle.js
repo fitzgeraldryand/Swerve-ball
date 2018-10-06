@@ -109,8 +109,8 @@ class Ball {
     this.draw("#5df942", 400, 400);
     this.xVelocity = 0;
     this.yVelocity = 0;
-    this.xSpin = 5 * (Math.random() - 0.5);
-    this.ySpin = 5 * (Math.random() - 0.5);
+    this.xSpin = 0;
+    this.ySpin = 0;
     this.rawX = 400;
     this.rawY = 400;
     this.farX = 400;
@@ -127,6 +127,16 @@ class Ball {
     this.stage.update();
   }
 
+  applySpin() {
+    if (this.direction === 1){
+      this.xVelocity -= this.xSpin / this.totalDistance;
+      this.yVelocity -= this.ySpin / this.totalDistance;
+    } else {
+      this.xVelocity += this.xSpin / this.totalDistance;
+      this.yVelocity += this.ySpin / this.totalDistance;
+    }
+  }
+
   scaleBall() {
     this.ball.scaleX = 1 - (this.distance * 3) / (4 * this.totalDistance);
     this.ball.scaleY = 1 - (this.distance * 3) / (4 * this.totalDistance);
@@ -136,55 +146,40 @@ class Ball {
 
   moveThroughTunnel() {
     if (this.direction === 1) {
-      this.distance += 2;
+      this.distance += 2.5;
     } else if (this.direction === -1) {
-      this.distance -= 2;
+      this.distance -= 2.5;
     }
     this.scaleBall();
     this.applySpin();
     this.applyVelocity();
     this.applyPerspective();
     this.adjustForRadius();
-    // this.moveAroundTunnel();
     this.stage.update();
   }
 
-  // moveAroundTunnel() {
-  //   this.ball.x += this.xVelocity;
-  //   this.ball.y += this.yVelocity;
-  // }
-
   adjustForRadius() {
     if (this.rawX > 400) {
-      this.ball.x -= this.ballRadius * (this.rawX - 400)/312;
+      this.ball.x -= this.ballRadius * (this.rawX - 400)/322;
     } else if (this.rawX < 400) {
-      this.ball.x += this.ballRadius * (400 - this.rawX)/312;
+      this.ball.x += this.ballRadius * (400 - this.rawX)/322;
     }
 
     if (this.rawY > 400) {
-      this.ball.y -= this.ballRadius * (this.rawY - 400)/209;
+      this.ball.y -= this.ballRadius * (this.rawY - 400)/348;
     } else if (this.rawY < 400) {
-      this.ball.y += this.ballRadius * (400 - this.rawY)/209;
+      this.ball.y += this.ballRadius * (400 - this.rawY)/348;
     }
   }
 
   applyPerspective() {
-    const distanceFactor = this.distance / this.totalDistance;
+    const distanceRatio= this.distance / this.totalDistance;
 
-    this.ball.x = this.rawX - (this.rawX - this.farX) * distanceFactor;
-    this.ball.y = this.rawY - (this.rawY - this.farY) * distanceFactor;
+    this.ball.x = this.rawX - (this.rawX - this.farX) * distanceRatio;
+    this.ball.y = this.rawY - (this.rawY - this.farY) * distanceRatio;
   }
 
 
-  applySpin() {
-    if (this.direction === 1){
-     this.xVelocity -= this.xSpin / this.totalDistance;
-     this.yVelocity -= this.ySpin / this.totalDistance;
-    } else {
-     this.xVelocity += this.xSpin / this.totalDistance;
-     this.yVelocity += this.ySpin / this.totalDistance;
-    }
-  }
 
  applyVelocity() {
     this.rawX += this.xVelocity;
@@ -245,16 +240,19 @@ class Paddle {
     this.game = game;
     this.type = type;
     this.paddle = new createjs.Shape();
-    this.drawPaddle();
+    this.color = (this.type === 'Human' ? "blue" : "red");
+    this.drawPaddle(this.color);
     this.width = (this.type === 'Human' ? humanWidth : aiWidth);
     this.height = (this.type === 'Human' ? humanHeight : aiHeight);
-    this.placeholderX = 400;
-    this.placeholderY = 400;
+    this.placeholderX = this.paddle.x;
+    this.placeholderY = this.paddle.y;
+    this.placeholder2X = this.paddle.x;
+    this.placeholder2Y = this.paddle.y;
   }
 
-  drawPaddle() {
+  drawPaddle(color) {
     if (this.type === 'Human') {
-      this.paddle.graphics.beginStroke("blue").beginFill('gray').drawRoundRect(0, 0, humanWidth, humanHeight, 8);
+      this.paddle.graphics.beginStroke(color).beginFill('gray').drawRoundRect(0, 0, humanWidth, humanHeight, 8);
       this.paddle.alpha = 0.5;
       // debugger
       this.paddle.x = 338;
@@ -265,10 +263,10 @@ class Paddle {
       // centerHumanPaddle.alpha = 0.5;
       // this.stage.addChild(centerHumanPaddle);
     } else {
-      this.paddle.graphics.beginStroke("red").beginFill('gray').drawRoundRect(380, 388, aiWidth, aiHeight, 4);
+      this.paddle.graphics.beginStroke(color).beginFill('gray').drawRoundRect(0, 0, aiWidth, aiHeight, 4);
       this.paddle.alpha = 0.5;
-      // this.paddle.x = 380;
-      // this.paddle.y = 388;
+      this.paddle.x = 380;
+      this.paddle.y = 388;
       this.stage.addChild(this.paddle);
     }
     this.stage.update();
@@ -307,15 +305,27 @@ class Paddle {
     }
   }
 
-  movePaddle() {
-    this.previousX = this.placeholderX;
-    this.previousY = this.placeholderY;
+  movePaddle(ball) {
+    if (this.type === 'Human') {
+      this.previousX = this.placeholder2X;
+      this.previousY = this.placeholder2Y;
 
-    this.placeholderX = this.paddle.x;
-    this.placeholderY = this.paddle.y;
+      this.placeholder2X = this.placeholderX;
+      this.placeholder2Y = this.placeholderY;
 
-    this.paddle.x = this.stage.mouseX - this.width / 2;
-    this.paddle.y = this.stage.mouseY - this.height / 2;
+      this.placeholderX = this.paddle.x;
+      this.placeholderY = this.paddle.y;
+
+      this.paddle.x = this.stage.mouseX - this.width / 2;
+      this.paddle.y = this.stage.mouseY - this.height / 2;
+    } else {
+      this.defineBounds();
+      const difX = ball.farX - (this.paddle.x + (this.width / 2));
+      const difY = ball.farY - (this.paddle.y + (this.height / 2));
+      debugger
+      this.paddle.x += difX / 20;
+      this.paddle.y += difY / 20;
+    }
 
     this.defineBounds();
     this.stage.update();
@@ -355,8 +365,8 @@ class Tunnel {
     this.stage = stage;
     this.game = game;
     this.ticker = createjs.Ticker;
-    this.ticker.framerate = 60;
-    this.totalDistance = 180;
+    this.ticker.framerate = 80;
+    this.totalDistance = 240;
     this.difficulty = difficulty;
     this.drawTunnel();
     this.aiPaddle = new _paddle_js__WEBPACK_IMPORTED_MODULE_0__["default"](this.stage, this.game, Ai);
@@ -423,7 +433,7 @@ class Tunnel {
   }
 
   controlPaddle() {
-    // this.ticker.addEventListener('tick', this.aiPaddle.movePaddle.bind(this.aiPaddle));
+    this.ticker.addEventListener('tick', this.aiPaddle.movePaddle.bind(this.aiPaddle, this.ball));
     this.ticker.addEventListener('tick', this.humanPaddle.movePaddle.bind(this.humanPaddle, this.ball));
   }
 
@@ -438,11 +448,13 @@ class Tunnel {
         // this.ball.xVelocity = this.aiPaddle.paddleVelocityX();
         // debugger
         // this.ball.yVelocity = this.aiPaddle.paddleVelocityY();
+        // this.aiPaddle.paddle.graphics.draw("yellow");
         this.ball.direction = -1;
       } else {
         this.ball.direction = 0;
         this.ticker.removeEventListener('tick', this.ball.moveThroughTunnel.bind(this.ball));
         this.ticker.removeEventListener('tick', this.scaleTracker.bind(this));
+        this.ticker.removeEventListener('tick', this.aiPaddle.movePaddle.bind(this.aiPaddle, this.ball));
         this.handleFarBallFinish();
       }
     } else if (this.ball.direction === -1 && this.ball.distance === 0) {
@@ -477,15 +489,24 @@ class Tunnel {
   }
 
   hitX(paddle) {
-    const locator = (paddle.type === 'Human' ? paddle.paddle.x : paddle.paddle.graphics.command.x);
+    const locator = paddle.paddle.x;
+    const locator2 = paddle.placeholderX;
     if (
         (
           (this.ball.ball.x - this.ball.ballRadius) <= (locator + paddle.width) &&
           (this.ball.ball.x - this.ball.ballRadius) >= (locator)
         ) ||
-      (
+        (
           (this.ball.ball.x + this.ball.ballRadius) <= (locator + paddle.width) &&
           (this.ball.ball.x + this.ball.ballRadius) >= (locator)
+        ) ||
+        (
+          (this.ball.ball.x - this.ball.ballRadius) <= (locator2 + paddle.width) &&
+          (this.ball.ball.x - this.ball.ballRadius) >= (locator2)
+        ) ||
+        (
+          (this.ball.ball.x + this.ball.ballRadius) <= (locator2 + paddle.width) &&
+          (this.ball.ball.x + this.ball.ballRadius) >= (locator2)
         )
     ) {
       return true;
@@ -495,7 +516,8 @@ class Tunnel {
   }
 
   hitY(paddle) {
-    const locator = (paddle.type === 'Human' ? paddle.paddle.y : paddle.paddle.graphics.command.y);
+    const locator = paddle.paddle.y;
+    const locator2 = paddle.placeholderY;
     if (
         (
           (this.ball.ball.y - this.ball.ballRadius) <= (locator + paddle.height) &&
@@ -504,6 +526,14 @@ class Tunnel {
         (
           (this.ball.ball.y + this.ball.ballRadius) <= (locator + paddle.height) &&
           (this.ball.ball.y + this.ball.ballRadius) >= (locator)
+        ) ||
+        (
+          (this.ball.ball.y - this.ball.ballRadius) <= (locator2 + paddle.height) &&
+          (this.ball.ball.y - this.ball.ballRadius) >= locator2
+        ) ||
+        (
+          (this.ball.ball.y + this.ball.ballRadius) <= (locator2 + paddle.height) &&
+          (this.ball.ball.y + this.ball.ballRadius) >= (locator2)
         )
     ) {
       return true;

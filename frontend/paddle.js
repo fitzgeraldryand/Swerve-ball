@@ -9,16 +9,19 @@ class Paddle {
     this.game = game;
     this.type = type;
     this.paddle = new createjs.Shape();
-    this.drawPaddle();
+    this.color = (this.type === 'Human' ? "blue" : "red");
+    this.drawPaddle(this.color);
     this.width = (this.type === 'Human' ? humanWidth : aiWidth);
     this.height = (this.type === 'Human' ? humanHeight : aiHeight);
-    this.placeholderX = 400;
-    this.placeholderY = 400;
+    this.placeholderX = this.paddle.x;
+    this.placeholderY = this.paddle.y;
+    this.placeholder2X = this.paddle.x;
+    this.placeholder2Y = this.paddle.y;
   }
 
-  drawPaddle() {
+  drawPaddle(color) {
     if (this.type === 'Human') {
-      this.paddle.graphics.beginStroke("blue").beginFill('gray').drawRoundRect(0, 0, humanWidth, humanHeight, 8);
+      this.paddle.graphics.beginStroke(color).beginFill('gray').drawRoundRect(0, 0, humanWidth, humanHeight, 8);
       this.paddle.alpha = 0.5;
       // debugger
       this.paddle.x = 338;
@@ -29,10 +32,10 @@ class Paddle {
       // centerHumanPaddle.alpha = 0.5;
       // this.stage.addChild(centerHumanPaddle);
     } else {
-      this.paddle.graphics.beginStroke("red").beginFill('gray').drawRoundRect(380, 388, aiWidth, aiHeight, 4);
+      this.paddle.graphics.beginStroke(color).beginFill('gray').drawRoundRect(0, 0, aiWidth, aiHeight, 4);
       this.paddle.alpha = 0.5;
-      // this.paddle.x = 380;
-      // this.paddle.y = 388;
+      this.paddle.x = 380;
+      this.paddle.y = 388;
       this.stage.addChild(this.paddle);
     }
     this.stage.update();
@@ -71,15 +74,27 @@ class Paddle {
     }
   }
 
-  movePaddle() {
-    this.previousX = this.placeholderX;
-    this.previousY = this.placeholderY;
+  movePaddle(ball) {
+    if (this.type === 'Human') {
+      this.previousX = this.placeholder2X;
+      this.previousY = this.placeholder2Y;
 
-    this.placeholderX = this.paddle.x;
-    this.placeholderY = this.paddle.y;
+      this.placeholder2X = this.placeholderX;
+      this.placeholder2Y = this.placeholderY;
 
-    this.paddle.x = this.stage.mouseX - this.width / 2;
-    this.paddle.y = this.stage.mouseY - this.height / 2;
+      this.placeholderX = this.paddle.x;
+      this.placeholderY = this.paddle.y;
+
+      this.paddle.x = this.stage.mouseX - this.width / 2;
+      this.paddle.y = this.stage.mouseY - this.height / 2;
+    } else {
+      this.defineBounds();
+      const difX = ball.farX - (this.paddle.x + (this.width / 2));
+      const difY = ball.farY - (this.paddle.y + (this.height / 2));
+      debugger
+      this.paddle.x += difX / 20;
+      this.paddle.y += difY / 20;
+    }
 
     this.defineBounds();
     this.stage.update();
