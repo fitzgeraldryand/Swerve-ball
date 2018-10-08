@@ -2,6 +2,7 @@ const humanWidth = 124;
 const humanHeight = 80;
 const aiWidth = 38;
 const aiHeight = 24;
+//tight
 
 class Paddle {
   constructor(stage, game, type, difficulty) {
