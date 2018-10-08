@@ -5,6 +5,7 @@ class Ball {
     this.stage = stage;
     this.game = game;
     this.totalDistance = totalDistance;
+    this.difficulty = difficulty;
 
     this.ball = new createjs.Shape();
     this.ballRadius = startRadius;

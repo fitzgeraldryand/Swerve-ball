@@ -8,6 +8,7 @@ class Paddle {
     this.stage = stage;
     this.game = game;
     this.type = type;
+    this.difficulty = difficulty;
 
     this.paddle = new createjs.Shape();
     this.width = (this.type === 'Human' ? humanWidth : aiWidth);
@@ -96,8 +97,9 @@ class Paddle {
       const xGap = ball.farX - (this.paddle.x + (this.width / 2));
       const yGap = ball.farY - (this.paddle.y + (this.height / 2));
       //below divisor determines how quickly aiPaddle reacts
-      this.paddle.x += xGap / 20;
-      this.paddle.y += yGap / 20;
+      this.paddle.x += (xGap * (0.025 * (this.difficulty + 1)));
+      this.paddle.y += (yGap * (0.025 * (this.difficulty + 1)));
+      debugger
     }
 
     this.defineBounds();

@@ -12,14 +12,14 @@ class Tunnel {
 
     this.drawTunnel();
 
-    this.aiPaddle = new Paddle(this.stage, this.game, Ai);
+    this.aiPaddle = new Paddle(this.stage, this.game, Ai, this.difficulty);
     this.tracker = new createjs.Shape();
     this.drawTracker();
     this.ball = new Ball(this.stage, this.game, this.totalDistance, this.difficulty);
-    this.humanPaddle = new Paddle(this.stage, this.game, Human);
+    this.humanPaddle = new Paddle(this.stage, this.game, Human, this.difficulty);
 
     this.ticker = createjs.Ticker;
-    this.ticker.framerate = 80;
+    this.ticker.framerate = 80 + (5 * this.difficulty);
 
     this.pointWinner = null;
     this.ticker.removeAllEventListeners('tick');
