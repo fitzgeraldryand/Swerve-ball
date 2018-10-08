@@ -99,7 +99,6 @@ class Paddle {
       //below divisor determines how quickly aiPaddle reacts
       this.paddle.x += (xGap * (0.025 * (this.difficulty + 1)));
       this.paddle.y += (yGap * (0.025 * (this.difficulty + 1)));
-      debugger
     }
 
     this.defineBounds();

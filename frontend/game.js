@@ -11,15 +11,38 @@ class Game {
     this.humanLives = 5;
     this.aiLives = 3;
 
+    this.start = this.start.bind(this);
+
+    this.land();
+  }
+
+  land() {
+    this.tunnel = new Tunnel(this.stage, this, this.difficulty);
+    this.writeBigText('Swerveball');
+    this.drawButton();
+    document.addEventListener('mousedown', this.start);
+  }
+
+  drawButton() {
+    const text = new createjs.Text("CLICK TO START", "20px Courier New", "white");
+    text.x = 330;
+    text.y = 462;
+    text.textBaseline = "alphabetic";
+    this.stage.addChild(text);
+    this.stage.update();
+  }
+
+  start(){
+    document.removeEventListener('mousedown', this.start);
     this.stage.removeAllChildren();
     this.tunnel = new Tunnel(this.stage, this, this.difficulty);
     this.writeLevel();
     this.drawLives(this.humanLives, 'Human');
     this.drawLives(this.aiLives, 'Ai');
+    this.tunnel.startTunnel();
   }
 
   startPoint() {
-    // debugger
     this.tunnel.ticker.removeAllEventListeners();
     this.removeLives();
     this.updateLives();
@@ -31,7 +54,7 @@ class Game {
       this.continuePlay();
     } else if (this.isGameOver()) {
       this.removePieces();
-      this.writeGameOver();
+      this.writeBigText('Game Over');
     } else {
       this.continuePlay();
     }
@@ -40,6 +63,7 @@ class Game {
   continuePlay() {
     this.stage.removeAllChildren();
     this.tunnel = new Tunnel(this.stage, this, this.difficulty);
+    this.tunnel.startTunnel();
     this.lives = {};
     this.writeLevel();
     this.drawLives(this.humanLives, 'Human');
@@ -47,7 +71,6 @@ class Game {
   }
 
   updateLives() {
-    // debugger
     if (this.tunnel.pointWinner === 'Ai') {
       this.humanLives--;
     } else if (this.tunnel.pointWinner === 'Human') {
@@ -91,8 +114,8 @@ class Game {
     this.stage.removeChild(this.tunnel.tracker);
   }
 
-  writeGameOver() {
-    const gameOver = new createjs.Text("Game Over", "60px Courier New", "white");
+  writeBigText(text) {
+    const gameOver = new createjs.Text(`${text}`, "60px Courier New", "white");
     gameOver.x = 240;
     gameOver.y = 400;
     gameOver.textBaseline = "alphabetic";
