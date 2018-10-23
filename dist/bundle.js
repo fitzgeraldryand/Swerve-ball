@@ -747,7 +747,6 @@ class Tunnel {
     this.ticker.removeEventListener('tick', this.ball.move.bind(this.ball));
     this.ticker.removeEventListener('tick', this.scaleTracker.bind(this));
     this.ticker.removeEventListener('tick', this.aiPaddle.movePaddle.bind(this.aiPaddle, this.ball));
-    this.handleFarBallFinish();
   }
 
   removeEventListenersNear() {
@@ -768,6 +767,7 @@ class Tunnel {
         this.ball.direction = -1;
       } else {
         this.pointWinner = Human;
+        this.handleFarBallFinish();
         this.removeEventListenersFar();
         this.restart();
       }
@@ -777,6 +777,7 @@ class Tunnel {
         this.getSpinFromPaddles();
         this.ball.direction = 1;
       } else {
+        debugger
         this.pointWinner = Ai;
         this.removeEventListenersNear();
         this.restart();
